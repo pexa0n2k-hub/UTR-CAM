@@ -17,15 +17,20 @@ header{display:flex;align-items:center;justify-content:space-between;padding:13p
 .controls{position:absolute;z-index:3;left:0;right:0;bottom:16px;display:flex;justify-content:center;align-items:center;gap:10px}.btn{border:1px solid #fff2;background:#ffffff13;color:white;width:50px;height:50px;border-radius:50%;font-size:19px;backdrop-filter:blur(12px)}.capture{width:76px;height:76px;border:5px solid #fff;background:var(--accent);color:#071018;font-size:25px}
 .panel{padding:14px;margin-top:10px}.panel h2{font-size:13px;margin:0 0 9px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{padding:11px;border-radius:17px;background:#ffffff09;border:1px solid #fff1}.stat b{display:block;font-size:10px;color:var(--muted);margin-bottom:4px}.stat span{font-size:12px;word-break:break-word}
 .guide{display:flex;gap:7px;margin-top:9px}.guide input{min-width:0;flex:1;padding:12px;border-radius:15px;border:1px solid #fff2;background:#ffffff0b;color:#fff;outline:none}.guide button{padding:12px 12px;border:1px solid #fff2;background:#ffffff10;color:#fff;border-radius:15px}.scan{margin-top:8px;width:100%;padding:12px;border:1px solid #fff2;background:linear-gradient(90deg,#ffffff10,#ffffff06);color:#fff;border-radius:15px}
-#map{height:190px;margin-top:10px;border-radius:19px;overflow:hidden;border:1px solid #fff2;background:#111}.leaflet-control-attribution{font-size:7px}
+#map{height:145px;margin-top:10px;border-radius:19px;overflow:hidden;border:1px solid #fff2;background:#111}.leaflet-control-attribution{font-size:7px}
 #message{position:fixed;z-index:30;top:14px;left:50%;transform:translateX(-50%);padding:10px 14px;display:none;font-size:12px;white-space:nowrap}.modal{position:fixed;inset:0;z-index:25;display:none;place-items:end center;background:#0008}.sheet{width:min(650px,100%);padding:18px;border-radius:26px 26px 0 0}.sheet input{width:100%;padding:13px;border-radius:15px;border:1px solid #fff2;background:#ffffff0d;color:#fff}.sheet button{width:100%;padding:13px;margin-top:8px;border:1px solid #fff2;background:#ffffff0d;color:#fff;border-radius:15px}
 #ocrStatus{font-size:11px;color:var(--muted);margin-top:7px;display:none}
+nav{position:fixed;z-index:8;bottom:9px;left:50%;transform:translateX(-50%);width:min(620px,calc(100% - 20px));display:grid;grid-template-columns:repeat(4,1fr);padding:7px;border-radius:22px}
+.nav{background:none!important;border:0!important;color:var(--muted)!important;font-size:10px!important;padding:7px!important;border-radius:15px!important}
+.nav.active{color:var(--accent)!important}
+.nav div{font-size:18px;margin-bottom:2px}
+
 </style>
 </head>
 <body>
 <div id="message" class="glass"></div>
 <main class="app">
-<header class="glass"><div><h1>UTR CAM</h1><div class="status">Evidencia inteligente · V0.5</div></div><div id="camState" class="status">Cámara...</div></header>
+<header class="glass"><div><h1>UTR CAM</h1><div class="status">Evidencia inteligente · V0.6</div></div><div id="camState" class="status">Cámara...</div></header>
 <section class="camera glass">
 <video id="video" autoplay playsinline muted></video><div class="overlay"></div>
 <div class="topbar"><span class="badge">📷 <span id="lens">TRASERA</span></span><span class="badge">📍 <span id="gpsShort">GPS...</span></span></div>
@@ -38,7 +43,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:13p
 <div class="guide"><input id="guideInput" placeholder="Escribe o pega la guía"><button id="guideBtn">OK</button></div>
 <button class="scan" id="scanBtn">🔎 Detectar guía con cámara</button>
 <div id="ocrStatus">OCR: listo</div>
-<div id="map"></div>
+<div id="map"></div><button class="scan" id="mapBtn">🗺️ Abrir mapa grande</button>
 </section>
 </main>
 <nav class="glass"><button class="nav active"><div>📷</div>Cámara</button><button class="nav" onclick="msg('Paquetes: siguiente módulo')"><div>📦</div>Paquetes</button><button class="nav" onclick="scrollMap()"><div>🗺️</div>Mapa</button><button class="nav" onclick="openPersonalize()"><div>🎨</div>Personalizar</button></nav>
@@ -58,12 +63,77 @@ function setGuide(){const v=$('guideInput').value.trim();if(!v)return msg('Escri
 function initMap(){map=L.map('map',{zoomControl:false,attributionControl:true}).setView([19.291636,-98.953781],16);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,crossOrigin:true,attribution:'© OpenStreetMap'}).addTo(map);marker=L.marker([19.291636,-98.953781]).addTo(map).bindPopup('Ubicación de evidencia');}
 function updateMap(){if(!map||!pos)return;const ll=[pos.latitude,pos.longitude];marker.setLatLng(ll);map.setView(ll,17,{animate:true})}
 function scrollMap(){document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'});if(map)setTimeout(()=>map.invalidateSize(),350)}
+function openMapLarge(){if(pos){window.open(`https://www.openstreetmap.org/?mlat=${pos.latitude}&mlon=${pos.longitude}#map=19/${pos.latitude}/${pos.longitude}`,'_blank')}else msg('Primero obtén el GPS')}
 function capture(){const v=$('video');if(!v.videoWidth)return msg('La cámara aún no está lista');const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;const x=c.getContext('2d');x.drawImage(v,0,0,c.width,c.height);const s=Math.max(1,c.width/1080),h=Math.round(205*s);x.fillStyle='rgba(5,8,13,.88)';x.fillRect(0,c.height-h,c.width,h);x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent');x.font=`${Math.round(30*s)}px system-ui`;x.fillText('UTR CAM',Math.round(28*s),c.height-Math.round(151*s));x.fillStyle='#fff';x.font=`${Math.round(18*s)}px system-ui`;x.fillText(fmtDate(),Math.round(28*s),c.height-Math.round(116*s));x.fillText(`GPS ${pos?`${pos.latitude.toFixed(6)}, ${pos.longitude.toFixed(6)}`:'NO DISPONIBLE'}`,Math.round(28*s),c.height-Math.round(82*s));x.fillText(`GUIA ${guide}`,Math.round(28*s),c.height-Math.round(49*s));x.fillText('MAPA 📍 disponible en la ficha de evidencia',Math.round(28*s),c.height-Math.round(16*s));const data=c.toDataURL('image/jpeg',.94);sessionStorage.setItem('utr-last-evidence',data);localStorage.setItem('utr-last-meta',JSON.stringify({guide,coords:pos?`${pos.latitude},${pos.longitude}`:null,date:fmtDate()}));$('saved').textContent='Evidencia guardada';msg('Evidencia lista ✓')}
-async function scanGuide(){if(!stream)return msg('Cámara no lista');$('ocrStatus').style.display='block';$('ocrStatus').textContent='OCR: analizando...';try{const v=$('video'),c=document.createElement('canvas');c.width=Math.min(v.videoWidth,1600);c.height=Math.round(v.videoHeight*(c.width/v.videoWidth));c.getContext('2d').drawImage(v,0,0,c.width,c.height);const {data:{text}}=await Tesseract.recognize(c,'eng',{logger:m=>{if(m.status==='recognizing text')$('ocrStatus').textContent=`OCR: ${Math.round((m.progress||0)*100)}%`}});const cleaned=text.toUpperCase().replace(/[^A-Z0-9]/g,' ');const candidates=cleaned.match(/[A-Z0-9]{6,20}/g)||[];if(candidates.length){guide=candidates.sort((a,b)=>b.length-a.length)[0];$('guideInput').value=guide;$('guide').textContent=guide;updateUI();localStorage.setItem('utr-guide',guide);$('ocrStatus').textContent='OCR: guía detectada ✓';msg(`Guía detectada: ${guide}`)}else{$('ocrStatus').textContent='OCR: no encontré una guía clara';msg('No se detectó una guía clara')}}catch(e){$('ocrStatus').textContent='OCR: error';msg('No se pudo ejecutar OCR')}}
+async function scanGuide(){
+ if(!stream)return msg('Cámara no lista');
+ $('ocrStatus').style.display='block';
+ $('ocrStatus').textContent='OCR: preparando imagen...';
+ try{
+   const v=$('video');
+   const c=document.createElement('canvas');
+   const maxW=1800;
+   c.width=Math.min(v.videoWidth||1280,maxW);
+   c.height=Math.round((v.videoHeight||720)*(c.width/(v.videoWidth||1280)));
+   const ctx=c.getContext('2d');
+   ctx.drawImage(v,0,0,c.width,c.height);
+
+   // Recorte central: evita que el OCR intente leer toda la escena.
+   const crop=document.createElement('canvas');
+   crop.width=Math.round(c.width*.86);
+   crop.height=Math.round(c.height*.48);
+   crop.getContext('2d').drawImage(c,Math.round(c.width*.07),Math.round(c.height*.26),crop.width,crop.height,0,0,crop.width,crop.height);
+
+   // Alto contraste + escala de grises para etiquetas impresas.
+   const p=crop.getContext('2d');
+   const img=p.getImageData(0,0,crop.width,crop.height);
+   for(let i=0;i<img.data.length;i+=4){
+     const g=.299*img.data[i]+.587*img.data[i+1]+.114*img.data[i+2];
+     const v2=Math.max(0,Math.min(255,(g-128)*1.65+128));
+     img.data[i]=img.data[i+1]=img.data[i+2]=v2;
+   }
+   p.putImageData(img,0,0);
+
+   const {data:{text:raw}}=await Tesseract.recognize(crop,'eng',{
+     logger:m=>{
+       if(m.status==='recognizing text')$('ocrStatus').textContent=`OCR: ${Math.round((m.progress||0)*100)}%`;
+     },
+     tessedit_pageseg_mode:6,
+     preserve_interword_spaces:1
+   });
+
+   const normalized=raw.toUpperCase()
+     .replace(/[|IL]/g,'I')
+     .replace(/[^A-Z0-9\s-]/g,' ')
+     .replace(/\s+/g,' ')
+     .trim();
+
+   // Priorizamos bloques alfanuméricos de 6–24 caracteres.
+   const candidates=(normalized.match(/[A-Z0-9]{6,24}/g)||[])
+     .filter(x=>/[A-Z]/.test(x)&&/[0-9]/.test(x))
+     .sort((a,b)=>b.length-a.length);
+
+   if(candidates.length){
+     guide=candidates[0];
+     $('guideInput').value=guide;
+     $('guide').textContent=guide;
+     updateUI();
+     localStorage.setItem('utr-guide',guide);
+     $('ocrStatus').textContent='OCR: guía detectada ✓';
+     msg(`Guía detectada: ${guide}`);
+   }else{
+     $('ocrStatus').textContent='OCR: no encontré una guía clara';
+     msg('No se detectó una guía clara');
+   }
+ }catch(e){
+   $('ocrStatus').textContent='OCR: error';
+   msg('No se pudo ejecutar OCR');
+ }
+}
 function openPersonalize(){$('accentInput').value=localStorage.getItem('utr-accent')||'#65e6ff';$('modal').style.display='grid'}function closePersonalize(){$('modal').style.display='none'}function saveAccent(){const c=$('accentInput').value.trim();if(!/^#[0-9a-f]{6}$/i.test(c))return msg('Usa un HEX como #65e6ff');document.documentElement.style.setProperty('--accent',c);localStorage.setItem('utr-accent',c);closePersonalize();msg('Color guardado ✓')}
-$('flip').onclick=()=>{facing=facing==='environment'?'user':'environment';startCam()};$('torch').onclick=toggleTorch;$('loc').onclick=gps;$('capture').onclick=capture;$('guideBtn').onclick=setGuide;$('guideInput').addEventListener('keydown',e=>{if(e.key==='Enter')setGuide()});$('scanBtn').onclick=scanGuide;
+$('flip').onclick=()=>{facing=facing==='environment'?'user':'environment';startCam()};$('torch').onclick=toggleTorch;$('loc').onclick=gps;$('capture').onclick=capture;$('guideBtn').onclick=setGuide;$('guideInput').addEventListener('keydown',e=>{if(e.key==='Enter')setGuide()});$('scanBtn').onclick=scanGuide;$('mapBtn').onclick=openMapLarge;
 const saved=localStorage.getItem('utr-accent');if(saved)document.documentElement.style.setProperty('--accent',saved);const sg=localStorage.getItem('utr-guide');if(sg){guide=sg;$('guide').textContent=guide;$('guideInput').value=guide}
-setInterval(updateUI,1000);updateUI();initMap();startCam();gps();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js?ver=5').catch(()=>{});
+setInterval(updateUI,1000);updateUI();initMap();startCam();gps();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js?ver=6').catch(()=>{});
 </script>
 </body>
 </html>
