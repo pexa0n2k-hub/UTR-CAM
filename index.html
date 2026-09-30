@@ -30,7 +30,7 @@ nav{position:fixed;z-index:8;bottom:9px;left:50%;transform:translateX(-50%);widt
 <body>
 <div id="message" class="glass"></div>
 <main class="app">
-<header class="glass"><div><h1>UTR CAM</h1><div class="status">Evidencia inteligente · V0.7.1</div></div><div id="camState" class="status">Cámara...</div></header>
+<header class="glass"><div><h1>UTR CAM</h1><div class="status">Evidencia inteligente · V0.7.2</div></div><div id="camState" class="status">Cámara...</div></header>
 <section class="camera glass">
 <video id="video" autoplay playsinline muted></video><div class="overlay"></div>
 <div class="topbar"><span class="badge">📷 <span id="lens">TRASERA</span></span><span class="badge">📍 <span id="gpsShort">GPS...</span></span></div>
@@ -91,7 +91,7 @@ function openMapLarge(){
    window.bigMap.invalidateSize();
   }catch(e){closeBigMap();msg('No se pudo abrir el mapa')}
  },100);
-}&mlon=${pos.longitude}#map=19/${pos.latitude}/${pos.longitude}`,'_blank')}else msg('Primero obtén el GPS')}
+}
 function capture(){const v=$('video');if(!v.videoWidth)return msg('La cámara aún no está lista');const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;const x=c.getContext('2d');x.drawImage(v,0,0,c.width,c.height);const s=Math.max(1,c.width/1080),h=Math.round(205*s);x.fillStyle='rgba(5,8,13,.88)';x.fillRect(0,c.height-h,c.width,h);x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent');x.font=`${Math.round(30*s)}px system-ui`;x.fillText('UTR CAM',Math.round(28*s),c.height-Math.round(151*s));x.fillStyle='#fff';x.font=`${Math.round(18*s)}px system-ui`;x.fillText(fmtDate(),Math.round(28*s),c.height-Math.round(116*s));x.fillText(`GPS ${pos?`${pos.latitude.toFixed(6)}, ${pos.longitude.toFixed(6)}`:'NO DISPONIBLE'}`,Math.round(28*s),c.height-Math.round(82*s));x.fillText(`GUIA ${guide}`,Math.round(28*s),c.height-Math.round(49*s));x.fillText('MAPA 📍 disponible en la ficha de evidencia',Math.round(28*s),c.height-Math.round(16*s));const data=c.toDataURL('image/jpeg',.94);sessionStorage.setItem('utr-last-evidence',data);localStorage.setItem('utr-last-meta',JSON.stringify({guide,coords:pos?`${pos.latitude},${pos.longitude}`:null,date:fmtDate()}));$('saved').textContent='Evidencia guardada';msg('Evidencia lista ✓')}
 async function scanGuide(){
  if(!stream)return msg('Cámara no lista');
@@ -117,7 +117,7 @@ async function scanGuide(){
 function openPersonalize(){$('accentInput').value=localStorage.getItem('utr-accent')||'#65e6ff';$('modal').style.display='grid'}function closePersonalize(){$('modal').style.display='none'}function saveAccent(){const c=$('accentInput').value.trim();if(!/^#[0-9a-f]{6}$/i.test(c))return msg('Usa un HEX como #65e6ff');document.documentElement.style.setProperty('--accent',c);localStorage.setItem('utr-accent',c);closePersonalize();msg('Color guardado ✓')}
 $('flip').onclick=()=>{facing=facing==='environment'?'user':'environment';startCam()};$('torch').onclick=toggleTorch;$('loc').onclick=gps;$('capture').onclick=capture;$('guideBtn').onclick=setGuide;$('guideInput').addEventListener('keydown',e=>{if(e.key==='Enter')setGuide()});$('scanBtn').onclick=scanGuide;$('scanClose').onclick=()=>{$('scanOverlay').style.display='none';$('ocrStatus').textContent='OCR: cancelado'};$('mapBtn').onclick=openMapLarge;
 const saved=localStorage.getItem('utr-accent');if(saved)document.documentElement.style.setProperty('--accent',saved);const sg=localStorage.getItem('utr-guide');if(sg){guide=sg;$('guide').textContent=guide;$('guideInput').value=guide}
-setInterval(updateUI,1000);updateUI();try{initMap()}catch(e){}startCam();gps();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js?ver=7_1').catch(()=>{});
+setInterval(updateUI,1000);updateUI();try{initMap()}catch(e){}startCam();gps();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js?ver=7_2').catch(()=>{});
 </script>
 </body>
 </html>
